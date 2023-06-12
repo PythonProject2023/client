@@ -4,18 +4,22 @@ kivy.require('2.1.0')
 
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.button import Button
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.slider import Slider
 from kivy.uix.textinput import TextInput
+from kivy.graphics import Color, Rectangle
 from server import server_starter
 import multiprocessing
 import threading
 import time
 import socket
 import shlex
+from kivy.core.window import Window
+Window.clearcolor = (4/255, 81/255, 116/255, 1)
 
 # сокет
 sock = None
@@ -35,13 +39,18 @@ blue = [0, 0, 1, 1]
 purple = [1, 0, 1, 1]
 white = [1, 1, 1, 1]
 
+ORANGE=(250/255, 153/255, 57/255, 1)
+LIGHT_ORANGE = (248/255, 220/255, 191/255, 1)
+BLUE = (0, 31/255, 61/255, 1)
+LIGHT_BLUE = (4/255, 81/255, 116/255, 1)
 
-class MainMenu(Screen):
+class MainMenu(Screen): 
+    
     def __init__(self, **kwargs):
         super(MainMenu, self).__init__(**kwargs)
-        self.layout = BoxLayout(orientation="vertical")
-        self.layout.add_widget(Label(text="Своя игра", font_size=40))
-
+        self.layout = BoxLayout(orientation="vertical", padding=100, spacing=20)
+        self.layout.add_widget(Label(text="Своя игра", font_size=120, color=ORANGE, size_hint=(0.3, 0.9)))
+        self.layout.add_widget(Label(text="", font_size=120, color=ORANGE, size_hint=(0.2, 0.2)))
         self.buttons = [
             ("Создать игру", "create_game"),
             ("Присоединиться к игре", "join_game"),
@@ -52,8 +61,12 @@ class MainMenu(Screen):
         for text, screen_name in self.buttons:
             button = Button(
                 text=text,
-                size_hint=(1, 0.2),
+                size_hint=(0.3, 0.2),
                 on_release=self.switch_to_screen(screen_name),
+                background_normal='',
+                background_color=LIGHT_ORANGE,
+                color=BLUE,
+                font_size=40
             )
             self.layout.add_widget(button)
 
@@ -166,7 +179,7 @@ def empty_func(*args):
 
 def choose_button(th, q):
     """генератор функций для кнопок с ценами вопросов"""
-    def func(arg):
+    def func():
         # это будет происходить, если нажать на кнопку
         # p.s. flag_passive=True если сейчас нет активного вопроса и False иначе
         global sock, flag_passive
@@ -599,4 +612,5 @@ class MyApp(App):
 
         return screen_manager
 
-MyApp().run()
+def main():
+    MyApp().run()

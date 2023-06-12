@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 import kivy
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 import sys
 import socket
 import io
@@ -15,27 +16,39 @@ class TestApp(unittest.TestCase):
     def setUpClass(cls):
         cls.sock = MagicMock(spec=socket.socket)
         cls.sock.send.return_value = cls.sock
+        socket.socket = MagicMock(return_value=cls.sock)
         app.sock = cls.sock
-        app.widgets = {'text_fields': {'answer': Button(text='text')}}
+        app.widgets = {'text_fields': {'answer': Button(text='text')},
+                        'labels': {'curr_ans': Label(text='')},
+                        'buttons': {'accept': Button(text=''),
+                                    'reject': Button(text=''),
+                                    'answer': Button(text='')}}
+        app.reject_counts = 0
 
     def test_1_choose_button(self):
-        app.choose_button('прекрасный дагестан', 300)
-        exp_call = unittest.mock.call(("choose 'прекрасный дагестан' 300\n").encode())
+        f = app.choose_button('прекрасный дагестан', 300)
+        f()
+        exp_call = [unittest.mock.call(("choose 'прекрасный дагестан' 300\n").encode())]
+        print(self.sock.call_count)
         self.sock.send.assert_has_calls(exp_call)
         
     def test_2_answer_button(self):
-        app.answer_button('test')
-        exp_call = unittest.mock.call(("choose 'прекрасный дагестан' 300\n").encode())
+        f = app.answer_button('test')
+        f()
+        exp_call = [unittest.mock.call(("answer test text\n").encode())]
         self.sock.send.assert_has_calls(exp_call)
         
-    def test_3_choose_button(self):
-        app.choose_button('прекрасный дагестан', 300)
-        exp_call = unittest.mock.call(("choose 'прекрасный дагестан' 300\n").encode())
+    def test_3_reject_button(self):
+        f = app.reject_button('test')
+        f()
+        exp_call = [unittest.mock.call(("verdict reject test 1\n").encode())]
         self.sock.send.assert_has_calls(exp_call)
         
-    def test_4_choose_button(self):
-        app.choose_button('прекрасный дагестан', 300)
-        exp_call = unittest.mock.call(("choose 'прекрасный дагестан' 300\n").encode())
+    def test_4_accept_button(self):
+        f = app.accept_button('test')
+        f()
+        exp_call = [unittest.mock.call(("verdict accept test\n").encode())]
+        print(self.sock.call_count)
         self.sock.send.assert_has_calls(exp_call)
         
 class TestParser(unittest.TestCase):
